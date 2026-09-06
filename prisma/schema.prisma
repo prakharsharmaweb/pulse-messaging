@@ -15,10 +15,11 @@ model User {
   avatarColor  String   @default("#5b8def")
   createdAt    DateTime @default(now())
 
-  memberships   ConversationMember[]
-  messages      Message[]            @relation("MessageSender")
-  readReceipts  MessageRead[]
-  reactions     MessageReaction[]
+  memberships    ConversationMember[]
+  messages       Message[]            @relation("MessageSender")
+  readReceipts   MessageRead[]
+  reactions      MessageReaction[]
+  hiddenMessages MessageHidden[]
 }
 
 model Conversation {
@@ -74,12 +75,18 @@ model Message {
   metadata       Json?
   status         MessageStatus @default(SENT)
   replyToId      String?
+  // set when the sender edits the text; null otherwise
+  editedAt       DateTime?
+  // "delete for everyone" — soft delete; body/metadata are blanked in the DTO
+  deletedAt      DateTime?
+  deletedById    String?
   createdAt      DateTime      @default(now())
 
   conversation Conversation      @relation(fields: [conversationId], references: [id], onDelete: Cascade)
   sender       User              @relation("MessageSender", fields: [senderId], references: [id], onDelete: Cascade)
   reads        MessageRead[]
   reactions    MessageReaction[]
+  hiddenFor    MessageHidden[]
   replyTo      Message?          @relation("MessageReply", fields: [replyToId], references: [id], onDelete: SetNull)
   replies      Message[]         @relation("MessageReply")
 
@@ -88,6 +95,20 @@ model Message {
   @@index([conversationId, createdAt, id])
   @@index([senderId])
   @@index([replyToId])
+}
+
+// "delete for me" — per-user hide; the row stays for other participants.
+model MessageHidden {
+  id        String   @id @default(cuid())
+  messageId String
+  userId    String
+  createdAt DateTime @default(now())
+
+  message Message @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([messageId, userId])
+  @@index([userId])
 }
 
 model MessageReaction {

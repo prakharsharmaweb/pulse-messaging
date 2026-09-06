@@ -13,7 +13,8 @@ type MessageWithRelations = Message & {
   replyTo?: (Message & { sender?: Pick<User, "id"> }) | null;
 };
 
-function previewFor(m: Pick<Message, "kind" | "body">): string {
+function previewFor(m: Pick<Message, "kind" | "body" | "deletedAt">): string {
+  if (m.deletedAt) return "This message was deleted";
   switch (m.kind) {
     case "IMAGE":
       return "📷 Photo";
@@ -38,14 +39,17 @@ function groupReactions(reactions: MessageReaction[] = []): ReactionGroup[] {
 }
 
 export function toMessageDTO(m: MessageWithRelations): MessageDTO {
-  const replyTo: ReplyPreview | null = m.replyTo
-    ? {
-        id: m.replyTo.id,
-        senderId: m.replyTo.senderId,
-        kind: m.replyTo.kind,
-        preview: previewFor(m.replyTo),
-      }
-    : null;
+  const deleted = m.deletedAt != null;
+
+  const replyTo: ReplyPreview | null =
+    !deleted && m.replyTo
+      ? {
+          id: m.replyTo.id,
+          senderId: m.replyTo.senderId,
+          kind: m.replyTo.kind,
+          preview: previewFor(m.replyTo),
+        }
+      : null;
 
   return {
     id: m.id,
@@ -53,12 +57,14 @@ export function toMessageDTO(m: MessageWithRelations): MessageDTO {
     conversationId: m.conversationId,
     senderId: m.senderId,
     kind: m.kind,
-    body: m.body,
-    metadata: (m.metadata as MessageDTO["metadata"]) ?? null,
+    body: deleted ? "" : m.body,
+    metadata: deleted ? null : (m.metadata as MessageDTO["metadata"]) ?? null,
     status: m.status,
     createdAt: m.createdAt.toISOString(),
+    editedAt: m.editedAt ? m.editedAt.toISOString() : null,
+    deletedAt: m.deletedAt ? m.deletedAt.toISOString() : null,
     readBy: (m.reads ?? []).map((r) => r.userId),
-    reactions: groupReactions(m.reactions),
+    reactions: deleted ? [] : groupReactions(m.reactions),
     replyTo,
   };
 }

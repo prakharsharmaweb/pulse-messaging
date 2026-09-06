@@ -10,6 +10,9 @@ import type {
 import { messageInclude, toMessageDTO } from "./serialize";
 import { isMember } from "./conversations";
 
+/** Excludes messages the given user has "deleted for me". */
+const notHiddenFor = (userId: string) => ({ hiddenFor: { none: { userId } } });
+
 const PAGE_SIZE = 30;
 
 export class MessageError extends Error {
@@ -116,7 +119,7 @@ export async function getMessages(
   }
 
   const rows = await prisma.message.findMany({
-    where: { conversationId },
+    where: { conversationId, ...notHiddenFor(userId) },
     orderBy: [{ createdAt: "desc" }, { id: "desc" }],
     take: PAGE_SIZE + 1,
     ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
@@ -149,7 +152,11 @@ export async function getMessagesAfter(
     after = anchor?.createdAt ?? null;
   }
   const rows = await prisma.message.findMany({
-    where: { conversationId, ...(after ? { createdAt: { gt: after } } : {}) },
+    where: {
+      conversationId,
+      ...notHiddenFor(userId),
+      ...(after ? { createdAt: { gt: after } } : {}),
+    },
     orderBy: [{ createdAt: "asc" }, { id: "asc" }],
     take: 200,
     include: messageInclude,
@@ -245,6 +252,99 @@ export async function toggleReaction(
     (a, b) => b.count - a.count || a.emoji.localeCompare(b.emoji)
   );
   return { conversationId: message.conversationId, messageId, reactions };
+}
+
+/**
+ * Edits the text of a message. Sender-only, TEXT-only. The updated body is
+ * re-run through profanity moderation by the caller before this is invoked.
+ */
+export async function editMessage(
+  messageId: string,
+  userId: string,
+  rawBody: string
+): Promise<{ message: MessageDTO; conversationId: string }> {
+  const existing = await prisma.message.findUnique({
+    where: { id: messageId },
+    select: { senderId: true, conversationId: true, kind: true, deletedAt: true },
+  });
+  if (!existing) throw new MessageError("NOT_FOUND", "Message not found.");
+  if (existing.senderId !== userId) {
+    throw new MessageError("FORBIDDEN", "You can only edit your own messages.");
+  }
+  if (existing.deletedAt) throw new MessageError("INVALID", "This message was deleted.");
+  if (existing.kind !== "TEXT") {
+    throw new MessageError("INVALID", "Only text messages can be edited.");
+  }
+
+  const body = rawBody.trim();
+  if (!body) throw new MessageError("INVALID", "Message cannot be empty.");
+  if (body.length > 4000) throw new MessageError("INVALID", "Message is too long.");
+
+  const updated = await prisma.message.update({
+    where: { id: messageId },
+    data: { body, editedAt: new Date() },
+    include: messageInclude,
+  });
+  return { message: toMessageDTO(updated), conversationId: existing.conversationId };
+}
+
+/**
+ * "Delete for everyone" — soft delete by the sender. The row stays (so other
+ * participants' clients can reconcile), but body/metadata/reactions are cleared.
+ * Idempotent.
+ */
+export async function deleteMessageForEveryone(
+  messageId: string,
+  userId: string
+): Promise<{ message: MessageDTO; conversationId: string }> {
+  const existing = await prisma.message.findUnique({
+    where: { id: messageId },
+    select: { senderId: true, conversationId: true, deletedAt: true },
+  });
+  if (!existing) throw new MessageError("NOT_FOUND", "Message not found.");
+  if (existing.senderId !== userId) {
+    throw new MessageError("FORBIDDEN", "You can only delete your own messages for everyone.");
+  }
+
+  // idempotent — already deleted, return current state
+  if (existing.deletedAt) {
+    const current = await prisma.message.findUniqueOrThrow({
+      where: { id: messageId },
+      include: messageInclude,
+    });
+    return { message: toMessageDTO(current), conversationId: existing.conversationId };
+  }
+
+  const updated = await prisma.$transaction(async (tx) => {
+    await tx.messageReaction.deleteMany({ where: { messageId } });
+    return tx.message.update({
+      where: { id: messageId },
+      data: { deletedAt: new Date(), deletedById: userId, body: "", metadata: Prisma.JsonNull },
+      include: messageInclude,
+    });
+  });
+  return { message: toMessageDTO(updated), conversationId: existing.conversationId };
+}
+
+/** "Delete for me" — per-user hide. Idempotent via the unique constraint. */
+export async function deleteMessageForMe(
+  messageId: string,
+  userId: string
+): Promise<{ conversationId: string }> {
+  const message = await prisma.message.findUnique({
+    where: { id: messageId },
+    select: { conversationId: true },
+  });
+  if (!message) throw new MessageError("NOT_FOUND", "Message not found.");
+  if (!(await isMember(message.conversationId, userId))) {
+    throw new MessageError("FORBIDDEN", "You are not a member of this conversation.");
+  }
+  await prisma.messageHidden.upsert({
+    where: { messageId_userId: { messageId, userId } },
+    create: { messageId, userId },
+    update: {},
+  });
+  return { conversationId: message.conversationId };
 }
 
 /** Bulk mark delivered when a recipient's socket receives messages. */

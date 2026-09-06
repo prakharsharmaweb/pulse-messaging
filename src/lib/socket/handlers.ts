@@ -9,6 +9,9 @@ import { checkProfanity } from "../moderation/profanity";
 import { prisma } from "../prisma";
 import {
   createMessage,
+  deleteMessageForEveryone,
+  deleteMessageForMe,
+  editMessage,
   getMessagesAfter,
   markConversationRead,
   markDelivered,
@@ -153,6 +156,67 @@ export function registerSocketHandlers(io: TypedServer) {
         if (err instanceof MessageError) return ack({ ok: false, message: err.message });
         console.error("reaction:toggle error", err);
         ack({ ok: false, message: "Could not add reaction." });
+      }
+    });
+
+    // --- edit a message (text only, sender only) ---
+    socket.on("message:edit", async ({ messageId, body }, ack) => {
+      try {
+        const rl = rateLimit(`edit:${user.id}`, RATE_LIMITS.messageEdit.limit, RATE_LIMITS.messageEdit.windowMs);
+        if (!rl.ok) {
+          return ack({ ok: false, code: "RATE_LIMITED", message: "You're editing too fast. Slow down a moment." });
+        }
+
+        // the new body goes through the same server-side profanity gate as a send
+        const verdict = checkProfanity(body ?? "");
+        if (!verdict.clean) {
+          await prisma.moderationLog.create({
+            data: {
+              userId: user.id,
+              kind: "profanity",
+              action: "blocked",
+              reason: `matched: ${verdict.matched.join(", ")}`,
+              detail: { messageId, edit: true },
+            },
+          });
+          return ack({
+            ok: false,
+            code: "PROFANITY",
+            message: "Your edit was blocked for prohibited language. Please rephrase and try again.",
+            matched: verdict.matched,
+          });
+        }
+
+        const { message, conversationId } = await editMessage(messageId, user.id, body);
+        io.to(conversationRoom(conversationId)).emit("message:update", message);
+        ack({ ok: true, message });
+      } catch (err) {
+        if (err instanceof MessageError) {
+          return ack({ ok: false, code: err.code === "FORBIDDEN" ? "FORBIDDEN" : "INVALID", message: err.message });
+        }
+        console.error("message:edit error", err);
+        ack({ ok: false, code: "ERROR", message: "Could not edit the message." });
+      }
+    });
+
+    // --- delete a message (for me / for everyone) ---
+    socket.on("message:delete", async ({ messageId, scope }, ack) => {
+      try {
+        const rl = rateLimit(`del:${user.id}`, RATE_LIMITS.messageDelete.limit, RATE_LIMITS.messageDelete.windowMs);
+        if (!rl.ok) return ack({ ok: false, message: "You're deleting too fast. Slow down a moment." });
+
+        if (scope === "everyone") {
+          const { message, conversationId } = await deleteMessageForEveryone(messageId, user.id);
+          io.to(conversationRoom(conversationId)).emit("message:update", message);
+        } else {
+          const { conversationId } = await deleteMessageForMe(messageId, user.id);
+          io.to(userRoom(user.id)).emit("message:removed", { conversationId, messageId });
+        }
+        ack({ ok: true });
+      } catch (err) {
+        if (err instanceof MessageError) return ack({ ok: false, message: err.message });
+        console.error("message:delete error", err);
+        ack({ ok: false, message: "Could not delete the message." });
       }
     });
 

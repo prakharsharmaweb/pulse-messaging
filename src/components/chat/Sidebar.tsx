@@ -181,6 +181,7 @@ export default function Sidebar({
 function Preview({ c, meId }: { c: ConversationDTO; meId: string }) {
   const msg = c.lastMessage;
   if (!msg) return <span className="text-ink-faint">No messages yet</span>;
+  if (msg.deletedAt) return <span className="italic text-ink-faint">This message was deleted</span>;
   const prefix = msg.senderId === meId ? "You: " : "";
   const text =
     msg.kind === "TEXT" ? msg.body : msg.kind === "IMAGE" ? "📷 Photo" : msg.kind === "GIF" ? "GIF" : "Sticker";

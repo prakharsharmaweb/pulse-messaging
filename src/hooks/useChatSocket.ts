@@ -7,7 +7,7 @@ import { outbox } from "@/lib/client/outbox";
 import { useChat, type LocalMessage } from "@/store/chat";
 import { toast } from "@/store/toast";
 import { notifyMessage, playPop } from "@/lib/client/notifications";
-import type { SendAck, SendMessageInput } from "@/lib/socket/events";
+import type { DeleteScope, EditAck, SendAck, SendMessageInput } from "@/lib/socket/events";
 import { conversationRoom } from "@/lib/socket/events";
 import type { MessageMetadata, ReplyPreview } from "@/lib/types";
 
@@ -122,6 +122,16 @@ export function useChatSocket(meId: string) {
       useChat.getState().applyReaction(conversationId, messageId, reactions);
     });
 
+    // edit + "delete for everyone"
+    socket.on("message:update", (msg) => {
+      useChat.getState().updateMessage(msg.conversationId, msg);
+    });
+
+    // "delete for me" — reaches every tab of the acting user
+    socket.on("message:removed", ({ conversationId, messageId }) => {
+      useChat.getState().removeMessage(conversationId, messageId);
+    });
+
     socket.on("conversation:new", async () => {
       try {
         const res = await fetch("/api/conversations");
@@ -146,6 +156,8 @@ export function useChatSocket(meId: string) {
       socket.off("message:new");
       socket.off("message:status");
       socket.off("reaction:update");
+      socket.off("message:update");
+      socket.off("message:removed");
       socket.off("conversation:new");
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -185,6 +197,8 @@ export function useChatSocket(meId: string) {
         metadata: metadata ?? null,
         status: "SENT",
         createdAt: new Date().toISOString(),
+        editedAt: null,
+        deletedAt: null,
         readBy: [],
         reactions: [],
         replyTo,
@@ -220,6 +234,44 @@ export function useChatSocket(meId: string) {
     });
   }, []);
 
+  const editMessage = useCallback((message: LocalMessage, body: string) => {
+    const conv = message.conversationId;
+    const previousBody = message.body;
+    // optimistic
+    useChat.getState().updateMessage(conv, {
+      ...message,
+      body,
+      editedAt: new Date().toISOString(),
+    });
+    getSocket().emit("message:edit", { messageId: message.id, body }, (res: EditAck) => {
+      if (res.ok) {
+        useChat.getState().updateMessage(conv, res.message);
+      } else {
+        useChat.getState().updateMessage(conv, { ...message, body: previousBody });
+        toast.error(res.message);
+      }
+    });
+  }, []);
+
+  const deleteMessage = useCallback((message: LocalMessage, scope: DeleteScope) => {
+    const conv = message.conversationId;
+    if (scope === "everyone") {
+      useChat.getState().updateMessage(conv, {
+        ...message,
+        body: "",
+        metadata: null,
+        reactions: [],
+        replyTo: null,
+        deletedAt: new Date().toISOString(),
+      });
+    } else {
+      useChat.getState().removeMessage(conv, message.id);
+    }
+    getSocket().emit("message:delete", { messageId: message.id, scope }, (res) => {
+      if (!res.ok) toast.error(res.message ?? "Could not delete the message.");
+    });
+  }, []);
+
   const joinConversation = useCallback((conversationId: string) => {
     getSocket().emit("message:read", { conversationId });
   }, []);
@@ -228,7 +280,7 @@ export function useChatSocket(meId: string) {
     getSocket().emit(typing ? "typing:start" : "typing:stop", { conversationId });
   }, []);
 
-  return { sendMessage, retryMessage, reactToMessage, joinConversation, setTyping };
+  return { sendMessage, retryMessage, reactToMessage, editMessage, deleteMessage, joinConversation, setTyping };
 }
 
 export { conversationRoom };

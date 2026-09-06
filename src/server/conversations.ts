@@ -29,6 +29,7 @@ export async function listConversations(userId: string): Promise<ConversationDTO
     include: {
       members: { include: { user: memberUserSelect } },
       messages: {
+        where: { hiddenFor: { none: { userId } } },
         orderBy: { createdAt: "desc" },
         take: 1,
         include: messageInclude,
@@ -66,7 +67,12 @@ export async function getConversationForUser(
     where: { id: conversationId },
     include: {
       members: { include: { user: memberUserSelect } },
-      messages: { orderBy: { createdAt: "desc" }, take: 1, include: messageInclude },
+      messages: {
+        where: { hiddenFor: { none: { userId } } },
+        orderBy: { createdAt: "desc" },
+        take: 1,
+        include: messageInclude,
+      },
     },
   });
   if (!row) return null;

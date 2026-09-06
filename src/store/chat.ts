@@ -22,6 +22,7 @@ type ChatState = {
   lastSeen: Record<string, string>;
   typing: TypingState;
   replyTo: LocalMessage | null;
+  editing: LocalMessage | null;
 
   setConnection: (c: ChatState["connection"]) => void;
   setConversations: (c: ConversationDTO[]) => void;
@@ -35,9 +36,12 @@ type ChatState = {
   markLocal: (conv: string, clientId: string, status: LocalStatus, error?: string) => void;
   applyStatus: (conv: string, messageIds: string[], status: MessageDTO["status"], readerId: string) => void;
   applyReaction: (conv: string, messageId: string, reactions: ReactionGroup[]) => void;
+  updateMessage: (conv: string, msg: MessageDTO) => void;
+  removeMessage: (conv: string, messageId: string) => void;
   bumpUnread: (conv: string, msg: MessageDTO) => void;
   clearUnread: (conv: string) => void;
   setReplyTo: (msg: LocalMessage | null) => void;
+  setEditing: (msg: LocalMessage | null) => void;
 
   setOnline: (ids: string[]) => void;
   setUserOnline: (id: string, online: boolean) => void;
@@ -58,6 +62,7 @@ export const useChat = create<ChatState>((set, get) => ({
   lastSeen: {},
   typing: {},
   replyTo: null,
+  editing: null,
 
   setConnection: (connection) => set({ connection }),
   setConversations: (conversations) => set({ conversations }),
@@ -66,7 +71,7 @@ export const useChat = create<ChatState>((set, get) => ({
       const rest = s.conversations.filter((x) => x.id !== c.id);
       return { conversations: [c, ...rest].sort((a, b) => b.updatedAt.localeCompare(a.updatedAt)) };
     }),
-  setActive: (activeId) => set({ activeId }),
+  setActive: (activeId) => set({ activeId, editing: null }),
 
   setMessages: (conv, msgs, meta) =>
     set((s) => ({
@@ -145,7 +150,41 @@ export const useChat = create<ChatState>((set, get) => ({
       };
     }),
 
+  updateMessage: (conv, msg) =>
+    set((s) => {
+      const list = s.messages[conv];
+      const messages = list
+        ? {
+            ...s.messages,
+            [conv]: list.map((m) =>
+              m.id === msg.id ? { ...m, ...msg, local: { status: "sent" as const } } : m
+            ),
+          }
+        : s.messages;
+      const conversations = s.conversations.map((c) =>
+        c.id === conv && c.lastMessage?.id === msg.id ? { ...c, lastMessage: msg } : c
+      );
+      return { messages, conversations };
+    }),
+
+  removeMessage: (conv, messageId) =>
+    set((s) => {
+      const list = s.messages[conv];
+      let messages = s.messages;
+      let lastRemaining: MessageDTO | null = null;
+      if (list) {
+        const filtered = list.filter((m) => m.id !== messageId);
+        lastRemaining = filtered[filtered.length - 1] ?? null;
+        messages = { ...s.messages, [conv]: filtered };
+      }
+      const conversations = s.conversations.map((c) =>
+        c.id === conv && c.lastMessage?.id === messageId ? { ...c, lastMessage: lastRemaining } : c
+      );
+      return { messages, conversations };
+    }),
+
   setReplyTo: (replyTo) => set({ replyTo }),
+  setEditing: (editing) => set({ editing, replyTo: editing ? null : get().replyTo }),
 
   bumpUnread: (conv, msg) =>
     set((s) => ({

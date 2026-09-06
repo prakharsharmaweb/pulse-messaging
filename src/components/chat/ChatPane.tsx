@@ -38,6 +38,7 @@ export default function ChatPane({
   const lastSeenMap = useChat((s) => s.lastSeen);
   const typing = useChat((s) => (conversation ? s.typing[conversation.id] : undefined));
   const setReplyTo = useChat((s) => s.setReplyTo);
+  const setEditing = useChat((s) => s.setEditing);
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -199,6 +200,8 @@ export default function ChatPane({
                         onRetry={() => socket.retryMessage(conversation.id, entry.m.clientId)}
                         onReact={(emoji) => entry.m.id && socket.reactToMessage(entry.m.id, emoji)}
                         onReply={() => setReplyTo(entry.m)}
+                        onEdit={() => setEditing(entry.m)}
+                        onDelete={(scope) => socket.deleteMessage(entry.m, scope)}
                         onJumpTo={jumpTo}
                         onOpenImage={setLightbox}
                       />

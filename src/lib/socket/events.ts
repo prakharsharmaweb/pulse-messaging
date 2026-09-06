@@ -15,6 +15,11 @@ export type SendAck =
   | { ok: true; message: MessageDTO }
   | { ok: false; code: "RATE_LIMITED" | "PROFANITY" | "FORBIDDEN" | "INVALID" | "ERROR"; message: string; matched?: string[] };
 
+/** Same shape as SendAck — edit re-runs profanity moderation. */
+export type EditAck = SendAck;
+
+export type DeleteScope = "me" | "everyone";
+
 export type PresencePayload = { userId: string; online: boolean; lastSeen: string };
 
 export type TypingPayload = { conversationId: string; userId: string; typing: boolean };
@@ -30,6 +35,10 @@ export type ReactionUpdate = {
 export interface ServerToClientEvents {
   "message:new": (msg: MessageDTO) => void;
   "message:status": (p: { conversationId: string; messageIds: string[]; status: "DELIVERED" | "READ"; by: string }) => void;
+  // edit + "delete for everyone" — the full updated DTO
+  "message:update": (msg: MessageDTO) => void;
+  // "delete for me" — sent only to the acting user's own room (all their tabs)
+  "message:removed": (p: { conversationId: string; messageId: string }) => void;
   "reaction:update": (p: ReactionUpdate) => void;
   "presence:update": (p: PresencePayload) => void;
   "presence:snapshot": (p: { online: string[] }) => void;
@@ -43,6 +52,8 @@ export interface ClientToServerEvents {
   "message:read": (p: { conversationId: string }, ack?: (res: { ok: boolean }) => void) => void;
   "message:sync": (p: { conversationId: string; afterId: string | null }, ack: (res: { messages: MessageDTO[] }) => void) => void;
   "reaction:toggle": (p: { messageId: string; emoji: string }, ack: (res: { ok: boolean; message?: string }) => void) => void;
+  "message:edit": (p: { messageId: string; body: string }, ack: (res: EditAck) => void) => void;
+  "message:delete": (p: { messageId: string; scope: DeleteScope }, ack: (res: { ok: boolean; message?: string }) => void) => void;
   "typing:start": (p: { conversationId: string }) => void;
   "typing:stop": (p: { conversationId: string }) => void;
   "presence:ping": () => void;

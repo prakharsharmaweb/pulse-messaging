@@ -31,13 +31,16 @@ export default function Composer({
   const meId = useChat((s) => s.meId);
   const replyTo = useChat((s) => s.replyTo);
   const setReplyTo = useChat((s) => s.setReplyTo);
+  const editing = useChat((s) => s.editing);
+  const setEditing = useChat((s) => s.setEditing);
   const participants = useChat((s) => s.conversations.find((c) => c.id === conversationId)?.participants);
 
   useEffect(() => {
     setText("");
     setNotice(null);
     setPanel(false);
-  }, [conversationId]);
+    setEditing(null);
+  }, [conversationId, setEditing]);
 
   useEffect(() => {
     const el = areaRef.current;
@@ -47,11 +50,17 @@ export default function Composer({
   }, [text]);
 
   useEffect(() => {
-    if (replyTo) areaRef.current?.focus();
-  }, [replyTo]);
+    if (editing) {
+      setText(editing.body);
+      areaRef.current?.focus();
+    } else if (replyTo) {
+      areaRef.current?.focus();
+    }
+  }, [editing, replyTo]);
 
   function onType(value: string) {
     setText(value);
+    if (editing) return; // editing shouldn't broadcast typing
     if (!typingRef.current) {
       typingRef.current = true;
       socket.setTyping(conversationId, true);
@@ -71,18 +80,32 @@ export default function Composer({
     }
   }
 
-  function sendText() {
+  function submit() {
     const body = text.trim();
     if (!body) return;
+
+    if (editing) {
+      if (body !== editing.body) socket.editMessage(editing, body);
+      setEditing(null);
+      setText("");
+      return;
+    }
+
     socket.sendMessage(conversationId, "TEXT", body, undefined, replyTo);
     setText("");
     setReplyTo(null);
     stopTyping();
   }
 
+  function cancelEditing() {
+    setEditing(null);
+    setText("");
+  }
+
   async function sendImage(file: File) {
     setNotice(null);
     setPanel(false);
+    if (editing) setEditing(null);
     if (!/^image\/(jpeg|png)$/.test(file.type)) {
       setNotice({ kind: "error", message: "Only JPEG and PNG images are supported." });
       return;
@@ -148,7 +171,23 @@ export default function Composer({
       <AnimatePresence>{notice && <ModerationNotice info={notice} onDismiss={() => setNotice(null)} />}</AnimatePresence>
 
       <AnimatePresence>
-        {replyTo && (
+        {editing && (
+          <m.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            className="mb-2 flex items-center gap-2 overflow-hidden rounded-lg border-l-2 border-brand bg-surface-overlay px-3 py-1.5 text-xs"
+          >
+            <div className="min-w-0 flex-1">
+              <p className="font-medium text-brand">Editing message</p>
+              <p className="truncate text-ink-muted">{editing.body}</p>
+            </div>
+            <button onClick={cancelEditing} aria-label="Cancel editing" className="text-ink-faint hover:text-ink">
+              ✕
+            </button>
+          </m.div>
+        )}
+        {!editing && replyTo && (
           <m.div
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
@@ -175,7 +214,7 @@ export default function Composer({
       </AnimatePresence>
 
       <AnimatePresence>
-        {panel && (
+        {panel && !editing && (
           <GifStickerPicker
             onGif={(gif) => {
               socket.sendMessage(conversationId, "GIF", "", {
@@ -206,6 +245,7 @@ export default function Composer({
       <div className="flex items-end gap-1.5">
         <button
           onClick={() => setPanel((v) => !v)}
+          disabled={!!editing}
           className="btn-ghost h-10 w-10 !px-0 text-lg"
           aria-label="GIFs and stickers"
         >
@@ -216,7 +256,7 @@ export default function Composer({
         </button>
         <button
           onClick={() => fileRef.current?.click()}
-          disabled={uploading}
+          disabled={uploading || !!editing}
           className="btn-ghost h-10 w-10 !px-0"
           aria-label="Send an image"
         >
@@ -250,25 +290,34 @@ export default function Composer({
           onKeyDown={(e) => {
             if (e.key === "Enter" && !e.shiftKey) {
               e.preventDefault();
-              sendText();
+              submit();
             }
-            if (e.key === "Escape" && replyTo) setReplyTo(null);
+            if (e.key === "Escape") {
+              if (editing) cancelEditing();
+              else if (replyTo) setReplyTo(null);
+            }
           }}
           rows={1}
-          placeholder="Write a message…"
+          placeholder={editing ? "Edit your message…" : "Write a message…"}
           className="input max-h-36 flex-1 resize-none py-2.5"
         />
 
         <m.button
-          onClick={sendText}
+          onClick={submit}
           disabled={!text.trim()}
           whileTap={{ scale: 0.94 }}
           className="btn-primary h-10 w-10 !px-0"
-          aria-label="Send"
+          aria-label={editing ? "Save edit" : "Send"}
         >
-          <svg viewBox="0 0 24 24" width="17" height="17" fill="none">
-            <path d="M4 12l16-8-6 8 6 8-16-8z" fill="currentColor" />
-          </svg>
+          {editing ? (
+            <svg viewBox="0 0 24 24" width="17" height="17" fill="none">
+              <path d="M5 12l5 5 9-11" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          ) : (
+            <svg viewBox="0 0 24 24" width="17" height="17" fill="none">
+              <path d="M4 12l16-8-6 8 6 8-16-8z" fill="currentColor" />
+            </svg>
+          )}
         </m.button>
       </div>
     </div>

@@ -119,7 +119,10 @@ Socket.IO Redis adapter, move `rateLimit` to Redis `INCR`/`EXPIRE`, and move
   - `@@unique([conversationId, userId])`, plus `@@index([userId])` and
     `@@index([conversationId])` for membership / authorization lookups.
   - `lastReadAt` drives unread counts without scanning receipts.
+  - `editedAt` / `deletedAt` — nullable; `deletedAt` is a soft "delete for everyone".
 - **`MessageRead`** — per-user read receipts, `@@unique([messageId, userId])`.
+- **`MessageReaction`** — `@@unique([messageId, userId, emoji])`.
+- **`MessageHidden`** — "delete for me": `@@unique([messageId, userId])`, `@@index([userId])`; every message read path filters `hiddenFor: { none: { userId } }`.
 - **`Conversation`** — `@@index([updatedAt])` for the conversation list ordering.
 - **`ModerationLog`** — every moderation decision (image + profanity) is recorded.
 
@@ -145,6 +148,11 @@ client keeps scroll position stable when older messages are prepended
 | Typing | debounced `typing:start` / `typing:stop`, 4 s TTL client-side auto-expire |
 | Presence | in-process `userId → Set<socketId>`; online while ≥1 socket; broadcast on first-connect / last-disconnect |
 | Unread counts | `messages where senderId≠me and createdAt > member.lastReadAt` |
+| Reactions | `reaction:toggle` → `MessageReaction` (unique `messageId+userId+emoji`) → `reaction:update` to the room |
+| Reply / quote | `replyToId` self-relation; jump-to-original in the UI |
+| Edit | `message:edit` (sender-only, TEXT-only) → re-runs profanity moderation → `message:update` to the room; `editedAt` shows a "· edited" marker |
+| Delete for everyone | `message:delete { scope: "everyone" }` (sender-only) → soft delete (`deletedAt`, body/metadata/reactions cleared) → `message:update`; renders as "This message was deleted" |
+| Delete for me | `message:delete { scope: "me" }` → `MessageHidden` row (unique `messageId+userId`) → `message:removed` to the acting user's own room (all their tabs); filtered from that user's pagination + reconnect sync only |
 
 ---
 

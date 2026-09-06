@@ -38,6 +38,8 @@ export type MessageDTO = {
   metadata: MessageMetadata | null;
   status: MessageStatus;
   createdAt: string;
+  editedAt: string | null;
+  deletedAt: string | null;
   readBy: string[];
   reactions: ReactionGroup[];
   replyTo: ReplyPreview | null;
