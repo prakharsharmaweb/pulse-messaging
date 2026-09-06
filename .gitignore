@@ -1,8 +1,28 @@
+# dependencies / build output
 node_modules
 .next
+.server/
+tsconfig.tsbuildinfo
+next-env.d.ts
+
+# env
+.env
 .env.local
+.env.*.local
+
+# runtime data (downloaded / generated / uploaded)
 /storage
 /public/models
-next-env.d.ts
+
+# logs & local scratch
 *.log
+.devlog.txt
+.p1-*.png
+.s-*.png
+.shot-*.png
+.testimg*
+.t.jpg
+scripts/_*.mjs
+
+# os
 .DS_Store

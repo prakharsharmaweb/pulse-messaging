@@ -115,24 +115,27 @@ Everything runs locally and uses only free components.
 # 1. install
 npm install
 
-# 2. create the database (password used in .env is "Prakhar")
-#    createdb realtime_messaging      (or pgAdmin / psql)
-#    the connection string lives in .env → DATABASE_URL
+# 2. environment — copy the template and set your Postgres password
+cp .env.example .env
+#    then edit DATABASE_URL in .env (the rest are working local defaults)
 
-# 3. schema + demo data
+# 3. create the database
+#    createdb realtime_messaging      (or pgAdmin / psql)
+
+# 4. schema + demo data
 npx prisma migrate deploy        # applies prisma/migrations
 npm run db:seed                  # users: alice / bob / carol  ·  password: "password"
 
-# 4. one-time: download the nudity model (~2.7 MB, MIT)
+# 5. one-time: download the nudity model (~2.7 MB, MIT)
 npm run setup:models
 
-# 5. run
+# 6. run
 npm run dev                      # http://localhost:3000
 ```
 
 Open two browsers (or one normal + one private) and sign in as **alice** and
-**bob**. `.env` ships with working local defaults (including a public GIPHY demo
-key), so no extra setup is needed.
+**bob**. Every value in `.env.example` except `DATABASE_URL` is a working local
+default (including a public GIPHY demo key).
 
 ### Production-style run
 
@@ -533,7 +536,8 @@ persistent volume or switch `storage.ts` to R2/S3 if they must survive redeploys
 
 ## 15. Environment variables
 
-`.env` ships with working local defaults.
+Copy `.env.example` → `.env`. Every value is a working local default except
+`DATABASE_URL` (set your Postgres password). `.env` is git-ignored.
 
 | Variable | Default | Purpose |
 | --- | --- | --- |
