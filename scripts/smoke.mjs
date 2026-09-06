@@ -1,7 +1,7 @@
 import { io } from "socket.io-client";
 import { PNG } from "pngjs";
 
-const BASE = "http://localhost:3000";
+const BASE = process.env.BASE || "http://localhost:3000";
 
 async function login(username) {
   const res = await fetch(`${BASE}/api/auth/login`, {

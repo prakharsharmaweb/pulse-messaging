@@ -189,7 +189,7 @@ Every decision is written to `ModerationLog` with the class probabilities.
 | Where inference runs | **In-process on the Node app server** via `@tensorflow/tfjs` pure-JS **CPU** backend. No GPU, no native addons, no external API, no data leaves the machine. |
 | Latency | ~150–500 ms per image once warm; first call ~1–2 s while the model loads once and is cached for the process lifetime |
 | Classes | `Neutral`, `Drawing`, `Sexy`, `Porn`, `Hentai` |
-| Decision rule | `score = P(Porn) + P(Hentai) + 0.4·P(Sexy)` → **reject if `score ≥ 0.60`** (`NSFW_THRESHOLD`) |
+| Decision rule | Reject if **any** holds: `P(Porn) ≥ 0.30`, `P(Hentai) ≥ 0.30`, `P(Sexy) ≥ 0.55`, or `P(Porn) + P(Hentai) + 0.5·P(Sexy) ≥ 0.45` (`NSFW_THRESHOLD`). Per-class gates catch a single strong signal; the combined score catches "a bit of everything". |
 | Failure mode | **fail-closed** — if the model cannot run, the upload is rejected (503), never delivered unchecked |
 
 Model files are downloaded once by `npm run setup:models` into

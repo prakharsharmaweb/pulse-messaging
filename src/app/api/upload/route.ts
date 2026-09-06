@@ -82,7 +82,7 @@ export async function POST(req: Request) {
       userId,
       kind: "image",
       action: verdict.safe ? "allowed" : "blocked",
-      reason: `score=${verdict.score} threshold=${verdict.threshold}`,
+      reason: verdict.reason ?? `score=${verdict.score} < threshold=${verdict.threshold}`,
       detail: verdict.predictions,
     },
   });

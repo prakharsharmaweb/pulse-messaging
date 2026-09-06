@@ -12,7 +12,7 @@ const schema = z.object({
   STORAGE_DIR: z.string().default("./storage"),
   MAX_UPLOAD_BYTES: z.coerce.number().default(8_388_608),
   NSFW_MODEL_DIR: z.string().default("./public/models/nsfw"),
-  NSFW_THRESHOLD: z.coerce.number().default(0.6),
+  NSFW_THRESHOLD: z.coerce.number().default(0.45),
 });
 
 export const env = schema.parse(process.env);
