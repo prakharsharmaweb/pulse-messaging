@@ -63,7 +63,7 @@ export default function AuthForm({ mode }: { mode: Mode }) {
           }}
         />
         <div className="relative flex items-center gap-2.5">
-          <Brand size={36} />
+          <Brand size={36} tone="onAccent" />
         </div>
         <div className="relative">
           <h2 className="text-3xl font-bold leading-tight tracking-tight">

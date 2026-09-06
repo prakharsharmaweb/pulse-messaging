@@ -1,9 +1,14 @@
 import clsx from "clsx";
 
-export function BrandMark({ size = 32 }: { size?: number }) {
+type Tone = "default" | "onAccent";
+
+export function BrandMark({ size = 32, tone = "default" }: { size?: number; tone?: Tone }) {
   return (
     <span
-      className="inline-flex items-center justify-center rounded-xl bg-aurora text-white shadow-lg shadow-brand/30"
+      className={clsx(
+        "inline-flex items-center justify-center rounded-xl shadow-lg",
+        tone === "onAccent" ? "bg-white text-brand shadow-black/10" : "bg-aurora text-white shadow-brand/30"
+      )}
       style={{ width: size, height: size }}
       aria-hidden
     >
@@ -21,16 +26,25 @@ export default function Brand({
   size = 32,
   className,
   showWordmark = true,
+  tone = "default",
 }: {
   size?: number;
   className?: string;
   showWordmark?: boolean;
+  tone?: Tone;
 }) {
   return (
     <span className={clsx("inline-flex items-center gap-2.5", className)}>
-      <BrandMark size={size} />
+      <BrandMark size={size} tone={tone} />
       {showWordmark && (
-        <span className="text-aurora text-lg font-bold tracking-tight">Pulse</span>
+        <span
+          className={clsx(
+            "text-lg font-bold tracking-tight",
+            tone === "onAccent" ? "text-white" : "text-aurora"
+          )}
+        >
+          Pulse
+        </span>
       )}
     </span>
   );
