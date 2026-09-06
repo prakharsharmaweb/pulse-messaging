@@ -30,6 +30,7 @@ Everything runs locally and uses only free components.
 15. [Environment variables](#15-environment-variables)
 16. [Scripts & testing](#16-scripts--testing)
 17. [Known limitations & trade-offs](#17-known-limitations--trade-offs)
+18. [License](#18-license)
 
 ---
 
@@ -595,3 +596,10 @@ development; the same paths are exercised by the UI.
   R2/S3 is configured.
 - Message list is not virtualised — a conversation scrolled back thousands of
   messages keeps that many DOM nodes (add `react-window` if needed).
+
+---
+
+## 18. License
+
+Proprietary — shared for evaluation and review only. No permission is granted to
+use, copy, modify, or redistribute the code. See [LICENSE](LICENSE).
