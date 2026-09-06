@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import clsx from "clsx";
 import { m } from "framer-motion";
 import type { LocalMessage } from "@/store/chat";
@@ -47,6 +47,32 @@ export default function MessageItem({
 }) {
   const [pickerOpen, setPickerOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const anyOpen = pickerOpen || menuOpen;
+  const actionsRef = useRef<HTMLDivElement>(null);
+
+  const closePopovers = () => {
+    setPickerOpen(false);
+    setMenuOpen(false);
+  };
+
+  // the reaction picker / actions menu stays open until Escape or a click
+  // outside of it (a mouse-away does NOT close it)
+  useEffect(() => {
+    if (!anyOpen) return;
+    const onDown = (e: MouseEvent) => {
+      if (!actionsRef.current?.contains(e.target as Node)) closePopovers();
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") closePopovers();
+    };
+    document.addEventListener("mousedown", onDown);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onDown);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [anyOpen]);
+
   const local = message.local?.status ?? "sent";
   const failed = local === "failed";
   const pending = local === "pending";
@@ -61,24 +87,22 @@ export default function MessageItem({
       initial={isNew ? { opacity: 0, y: 8 } : false}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.16, ease: "easeOut" }}
-      onMouseLeave={() => {
-        setPickerOpen(false);
-        setMenuOpen(false);
-      }}
       className={clsx(
-        "group/msg flex flex-col",
+        "group/msg relative flex flex-col",
         mine ? "items-end" : "items-start",
         grouped ? "mt-0.5" : "mt-3",
-        showTail ? "mb-0.5" : ""
+        showTail ? "mb-0.5" : "",
+        anyOpen && "z-50"
       )}
     >
       <div className={clsx("relative flex items-end gap-2", mine && "flex-row-reverse")}>
         {/* hover actions */}
         {canAct && (
           <div
+            ref={actionsRef}
             className={clsx(
-              "flex items-center gap-0.5 self-center opacity-0 transition group-hover/msg:opacity-100",
-              (pickerOpen || menuOpen) && "opacity-100"
+              "relative flex items-center gap-0.5 self-center opacity-0 transition group-hover/msg:opacity-100",
+              anyOpen ? "z-30 opacity-100" : ""
             )}
           >
             <button
