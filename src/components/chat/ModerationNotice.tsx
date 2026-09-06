@@ -38,12 +38,6 @@ export default function ModerationNotice({
       <div className="min-w-0 flex-1">
         <p className="font-medium text-danger">{title}</p>
         <p className="mt-0.5 text-xs text-ink-muted">{info.message}</p>
-        {info.kind === "nudity" && info.score !== undefined && (
-          <p className="mt-1 text-[11px] text-ink-faint">
-            explicit-content score {info.score.toFixed(2)} ≥ threshold{" "}
-            {info.threshold?.toFixed(2)} · checked on the server, not delivered
-          </p>
-        )}
       </div>
       <button
         onClick={onDismiss}
