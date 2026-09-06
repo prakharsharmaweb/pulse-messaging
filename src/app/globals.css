@@ -1,0 +1,151 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+ * Aurora design system — token-based theming.
+ * Colors are space-separated RGB channels so Tailwind's `/<alpha>` works.
+ */
+:root {
+  color-scheme: light;
+
+  --surface: 247 248 250;
+  --surface-raised: 255 255 255;
+  --surface-overlay: 255 255 255;
+  --surface-border: 230 232 238;
+
+  --ink: 26 28 35;
+  --ink-muted: 91 98 112;
+  --ink-faint: 138 144 158;
+
+  --brand: 109 94 252;
+  --brand-hover: 91 76 240;
+  --brand-soft: 237 235 254;
+  --accent-2: 168 85 247;
+
+  --bubble-them: 240 241 245;
+
+  --online: 18 183 106;
+  --danger: 229 72 77;
+  --warn: 245 158 11;
+
+  --scrollbar: 203 207 217;
+  --scrollbar-hover: 176 181 194;
+
+  --shadow-color: 20 20 40;
+}
+
+.dark {
+  color-scheme: dark;
+
+  --surface: 11 13 18;
+  --surface-raised: 20 22 29;
+  --surface-overlay: 25 28 36;
+  --surface-border: 38 42 53;
+
+  --ink: 231 233 238;
+  --ink-muted: 154 161 178;
+  --ink-faint: 107 114 128;
+
+  --brand: 124 109 255;
+  --brand-hover: 138 125 255;
+  --brand-soft: 29 27 51;
+  --accent-2: 176 108 247;
+
+  --bubble-them: 27 30 39;
+
+  --online: 22 197 94;
+  --danger: 240 90 95;
+  --warn: 245 158 11;
+
+  --scrollbar: 42 47 61;
+  --scrollbar-hover: 58 66 84;
+
+  --shadow-color: 0 0 0;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  @apply bg-surface text-ink font-sans antialiased;
+}
+
+/* thin, unobtrusive scrollbars */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgb(var(--scrollbar)) transparent;
+}
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+*::-webkit-scrollbar-thumb {
+  background: rgb(var(--scrollbar));
+  border-radius: 999px;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: rgb(var(--scrollbar-hover));
+}
+
+@layer base {
+  :focus-visible {
+    outline: 2px solid rgb(var(--brand) / 0.6);
+    outline-offset: 2px;
+  }
+  ::selection {
+    background: rgb(var(--brand) / 0.28);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+@layer components {
+  .input {
+    @apply w-full rounded-xl border border-surface-border bg-surface-raised px-3.5 py-2.5 text-sm text-ink
+      outline-none transition placeholder:text-ink-faint focus:border-brand focus:ring-2 focus:ring-brand/25;
+  }
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium
+      transition disabled:cursor-not-allowed disabled:opacity-50;
+  }
+  .btn-primary {
+    @apply btn bg-aurora text-white shadow-lg shadow-brand/25 hover:brightness-[1.08] active:brightness-95
+      disabled:brightness-100 disabled:shadow-none;
+  }
+  .btn-ghost {
+    @apply btn text-ink-muted hover:bg-surface-overlay hover:text-ink;
+  }
+  .card {
+    @apply rounded-2xl border border-surface-border bg-surface-raised
+      shadow-xl shadow-black/5 dark:shadow-black/30;
+  }
+}
+
+@layer utilities {
+  .bg-aurora {
+    background-image: linear-gradient(135deg, rgb(var(--brand)), rgb(var(--accent-2)));
+  }
+  .text-aurora {
+    background-image: linear-gradient(135deg, rgb(var(--brand)), rgb(var(--accent-2)));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .glow-aurora {
+    box-shadow: 0 6px 24px -6px rgb(var(--brand) / 0.5);
+  }
+  .surface-blur {
+    @apply bg-surface-raised/80 backdrop-blur-md backdrop-saturate-150;
+  }
+}

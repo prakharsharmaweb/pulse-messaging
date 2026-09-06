@@ -1,0 +1,153 @@
+▸ watching server sources…
+[watch] build finished, watching for changes...
+
+  ▸ Realtime Messaging ready on http://localhost:3000
+
+ ○ Compiling /src/middleware ...
+ ✓ Compiled /src/middleware in 1626ms (72 modules)
+ ○ Compiling /login ...
+(node:3808) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+ ✓ Compiled /login in 29.2s (1370 modules)
+<w> [webpack.cache.PackFileCacheStrategy/webpack.FileSystemInfo] Resolving '../../../typescript/lib/typescript' in d:\Assignment\node_modules\next\dist\build for build dependencies doesn't lead to expected result 'D:\Assignment\node_modules\typescript\lib\typescript.js', but to 'd:\Assignment\node_modules\typescript\lib\typescript.js' instead. Resolving dependencies are ignored for this path.
+<w>  at resolve commonjs file ../../../typescript/lib/typescript (expected D:\Assignment\node_modules\typescript\lib\typescript.js)
+<w>  at file dependencies d:\Assignment\node_modules\next\dist\build\load-jsconfig.js
+<w>  at file d:\Assignment\node_modules\next\dist\build\load-jsconfig.js
+<w>  at file dependencies d:\Assignment\node_modules\next\dist\build\webpack-config.js
+<w>  at file d:\Assignment\node_modules\next\dist\build\webpack-config.js
+<w>  at file dependencies d:\Assignment\node_modules\next\dist\build\handle-externals.js
+<w>  at file d:\Assignment\node_modules\next\dist\build\handle-externals.js
+<w>  at file dependencies d:\Assignment\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js
+<w>  at file d:\Assignment\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js
+<w>  at resolve commonjs d:\Assignment\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js
+ GET /login 200 in 29919ms
+ ○ Compiling /api/auth/login ...
+<w> [webpack.cache.PackFileCacheStrategy/webpack.FileSystemInfo] Resolving '../../../typescript/lib/typescript' in d:\Assignment\node_modules\next\dist\build for build dependencies doesn't lead to expected result 'D:\Assignment\node_modules\typescript\lib\typescript.js', but to 'd:\Assignment\node_modules\typescript\lib\typescript.js' instead. Resolving dependencies are ignored for this path.
+<w>  at resolve commonjs file ../../../typescript/lib/typescript (expected D:\Assignment\node_modules\typescript\lib\typescript.js)
+<w>  at file dependencies d:\Assignment\node_modules\next\dist\build\load-jsconfig.js
+<w>  at file d:\Assignment\node_modules\next\dist\build\load-jsconfig.js
+<w>  at file dependencies d:\Assignment\node_modules\next\dist\build\webpack-config.js
+<w>  at file d:\Assignment\node_modules\next\dist\build\webpack-config.js
+<w>  at file dependencies d:\Assignment\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js
+<w>  at file d:\Assignment\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js
+<w>  at resolve commonjs d:\Assignment\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js
+<w> [webpack.cache.PackFileCacheStrategy/webpack.FileSystemInfo] Resolving '../../../typescript/lib/typescript' in d:\Assignment\node_modules\next\dist\build for build dependencies doesn't lead to expected result 'D:\Assignment\node_modules\typescript\lib\typescript.js', but to 'd:\Assignment\node_modules\typescript\lib\typescript.js' instead. Resolving dependencies are ignored for this path.
+<w>  at resolve commonjs file ../../../typescript/lib/typescript (expected D:\Assignment\node_modules\typescript\lib\typescript.js)
+<w>  at file dependencies d:\Assignment\node_modules\next\dist\build\load-jsconfig.js
+<w>  at file d:\Assignment\node_modules\next\dist\build\load-jsconfig.js
+<w>  at file dependencies d:\Assignment\node_modules\next\dist\build\webpack-config.js
+<w>  at file d:\Assignment\node_modules\next\dist\build\webpack-config.js
+<w>  at file dependencies d:\Assignment\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js
+<w>  at file d:\Assignment\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js
+<w>  at resolve commonjs d:\Assignment\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js
+ ✓ Compiled /api/auth/login in 7s (827 modules)
+ POST /api/auth/login 200 in 7524ms
+ ○ Compiling /chat ...
+ ✓ Compiled /chat in 4.6s (1910 modules)
+ GET /chat 200 in 5457ms
+ GET /chat 200 in 137ms
+ ○ Compiling /icon.svg ...
+<w> [webpack.cache.PackFileCacheStrategy/webpack.FileSystemInfo] Resolving '../../../typescript/lib/typescript' in d:\Assignment\node_modules\next\dist\build for build dependencies doesn't lead to expected result 'D:\Assignment\node_modules\typescript\lib\typescript.js', but to 'd:\Assignment\node_modules\typescript\lib\typescript.js' instead. Resolving dependencies are ignored for this path.
+<w>  at resolve commonjs file ../../../typescript/lib/typescript (expected D:\Assignment\node_modules\typescript\lib\typescript.js)
+<w>  at file dependencies d:\Assignment\node_modules\next\dist\build\load-jsconfig.js
+<w>  at file d:\Assignment\node_modules\next\dist\build\load-jsconfig.js
+<w>  at file dependencies d:\Assignment\node_modules\next\dist\build\webpack-config.js
+<w>  at file d:\Assignment\node_modules\next\dist\build\webpack-config.js
+<w>  at file dependencies d:\Assignment\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js
+<w>  at file d:\Assignment\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js
+<w>  at file dependencies d:\Assignment\node_modules\next\dist\compiled\loader-runner\LoaderRunner.js
+<w>  at file d:\Assignment\node_modules\next\dist\compiled\loader-runner\LoaderRunner.js
+<w>  at file dependencies d:\Assignment\node_modules\next\dist\compiled\webpack\bundle5.js
+<w>  at file d:\Assignment\node_modules\next\dist\compiled\webpack\bundle5.js
+<w>  at file dependencies d:\Assignment\node_modules\next\dist\compiled\webpack\webpack.js
+<w>  at file d:\Assignment\node_modules\next\dist\compiled\webpack\webpack.js
+<w>  at file dependencies d:\Assignment\node_modules\next\dist\build\webpack\plugins\define-env-plugin.js
+<w>  at file d:\Assignment\node_modules\next\dist\build\webpack\plugins\define-env-plugin.js
+<w>  at file dependencies d:\Assignment\node_modules\next\dist\build\swc\index.js
+<w>  at file d:\Assignment\node_modules\next\dist\build\swc\index.js
+<w>  at file dependencies d:\Assignment\node_modules\next\dist\build\webpack\loaders\next-barrel-loader.js
+<w>  at file d:\Assignment\node_modules\next\dist\build\webpack\loaders\next-barrel-loader.js
+<w>  at resolve commonjs d:\Assignment\node_modules\next\dist\build\webpack\loaders\next-barrel-loader.js
+<w> [webpack.cache.PackFileCacheStrategy/webpack.FileSystemInfo] Resolving '../../../typescript/lib/typescript' in d:\Assignment\node_modules\next\dist\build for build dependencies doesn't lead to expected result 'D:\Assignment\node_modules\typescript\lib\typescript.js', but to 'd:\Assignment\node_modules\typescript\lib\typescript.js' instead. Resolving dependencies are ignored for this path.
+<w>  at resolve commonjs file ../../../typescript/lib/typescript (expected D:\Assignment\node_modules\typescript\lib\typescript.js)
+<w>  at file dependencies d:\Assignment\node_modules\next\dist\build\load-jsconfig.js
+<w>  at file d:\Assignment\node_modules\next\dist\build\load-jsconfig.js
+<w>  at file dependencies d:\Assignment\node_modules\next\dist\build\webpack-config.js
+<w>  at file d:\Assignment\node_modules\next\dist\build\webpack-config.js
+<w>  at file dependencies d:\Assignment\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js
+<w>  at file d:\Assignment\node_modules\next\dist\build\webpack\loaders\next-swc-loader.js
+<w>  at file dependencies d:\Assignment\node_modules\next\dist\compiled\loader-runner\LoaderRunner.js
+<w>  at file d:\Assignment\node_modules\next\dist\compiled\loader-runner\LoaderRunner.js
+<w>  at file dependencies d:\Assignment\node_modules\next\dist\compiled\webpack\bundle5.js
+<w>  at file d:\Assignment\node_modules\next\dist\compiled\webpack\bundle5.js
+<w>  at file dependencies d:\Assignment\node_modules\next\dist\compiled\webpack\webpack.js
+<w>  at file d:\Assignment\node_modules\next\dist\compiled\webpack\webpack.js
+<w>  at file dependencies d:\Assignment\node_modules\next\dist\build\webpack\plugins\define-env-plugin.js
+<w>  at file d:\Assignment\node_modules\next\dist\build\webpack\plugins\define-env-plugin.js
+<w>  at file dependencies d:\Assignment\node_modules\next\dist\build\swc\index.js
+<w>  at file d:\Assignment\node_modules\next\dist\build\swc\index.js
+<w>  at file dependencies d:\Assignment\node_modules\next\dist\build\webpack\loaders\next-barrel-loader.js
+<w>  at file d:\Assignment\node_modules\next\dist\build\webpack\loaders\next-barrel-loader.js
+<w>  at resolve commonjs d:\Assignment\node_modules\next\dist\build\webpack\loaders\next-barrel-loader.js
+ ✓ Compiled /icon.svg in 13.1s (1025 modules)
+ GET /icon.svg?bf9be9afe6528cd1 200 in 13757ms
+ GET /chat 200 in 3677ms
+ ✓ Compiled /api/auth/logout in 416ms (1049 modules)
+ POST /api/auth/logout 200 in 533ms
+ ○ Compiling /login ...
+ ✓ Compiled /login in 798ms (1074 modules)
+ ○ Compiling /api/auth/login ...
+ ✓ Compiled /api/auth/login in 638ms (1077 modules)
+ POST /api/auth/login 200 in 868ms
+ ○ Compiling /api/conversations/[id]/messages ...
+ ✓ Compiled /api/conversations/[id]/messages in 577ms (1080 modules)
+ GET /api/conversations/cmtomi84x0006dvack2awdu48/messages 200 in 1532ms
+ ✓ Compiled /api/users in 311ms (1054 modules)
+ GET /api/users?q= 200 in 505ms
+ POST /api/auth/logout 200 in 19ms
+ GET /login 200 in 347ms
+ ○ Compiling /icon.svg ...
+ ✓ Compiled /icon.svg in 637ms (1079 modules)
+ GET /icon.svg?bf9be9afe6528cd1 200 in 766ms
+ ✓ Compiled /api/auth/login in 416ms (1082 modules)
+ POST /api/auth/login 200 in 656ms
+ GET /icon.svg?bf9be9afe6528cd1 200 in 76ms
+ GET /login 200 in 131ms
+ GET /icon.svg?bf9be9afe6528cd1 200 in 19ms
+ POST /api/auth/login 200 in 106ms
+ GET /icon.svg?bf9be9afe6528cd1 200 in 40ms
+ GET /api/conversations/cmtoltwsl000314d1sxm69wou/messages 200 in 83ms
+ ○ Compiling /api/files/[...key] ...
+ ✓ Compiled /api/files/[...key] in 803ms (1087 modules)
+ GET /api/conversations/cmtoltwsl000314d1sxm69wou/messages 200 in 104ms
+ GET /api/files/cmtoltwsl000314d1sxm69wou/82565737-d10f-42c0-ada9-bf1b1c4cac5d.png 200 in 2426ms
+ GET /api/files/cmtoltwsl000314d1sxm69wou/f8aff763-8d2f-40ee-85b7-666b00db1375.png 200 in 2607ms
+ GET /api/files/cmtoltwsl000314d1sxm69wou/82565737-d10f-42c0-ada9-bf1b1c4cac5d.png 200 in 1052ms
+ GET /api/files/cmtoltwsl000314d1sxm69wou/9e604df7-73c7-4dfa-b31e-625f6e1bff3b.png 200 in 1060ms
+ GET /api/files/cmtoltwsl000314d1sxm69wou/ec976906-b83f-493f-980f-48c08807a30c.png 200 in 2656ms
+ GET /api/files/cmtoltwsl000314d1sxm69wou/f8aff763-8d2f-40ee-85b7-666b00db1375.png 200 in 1087ms
+ GET /api/files/cmtoltwsl000314d1sxm69wou/9e604df7-73c7-4dfa-b31e-625f6e1bff3b.png 200 in 2675ms
+ GET /api/files/cmtoltwsl000314d1sxm69wou/ec976906-b83f-493f-980f-48c08807a30c.png 200 in 1093ms
+ POST /api/auth/login 200 in 1000ms
+ POST /api/auth/login 200 in 119ms
+ ○ Compiling /api/conversations ...
+ ✓ Compiled /api/conversations in 2.8s (1051 modules)
+ GET /api/conversations 200 in 3126ms
+prisma:error 
+Invalid `tx.message.create()` invocation in
+d:\Assignment\.server\server.cjs:379:40
+
+  376 }
+  377 try {
+  378   const message = await prisma.$transaction(async (tx) => {
+→ 379     const created = await tx.message.create(
+Unique constraint failed on the fields: (`conversationId`,`clientId`)
+ ○ Compiling /api/upload ...
+ ✓ Compiled /api/upload in 762ms (1067 modules)
+
+============================
+Hi, looks like you are running TensorFlow.js in Node.js. To speed things up dramatically, install our node backend, visit https://github.com/tensorflow/tfjs-node for more details. 
+============================
+ POST /api/upload 200 in 8319ms
+ POST /api/upload 400 in 25ms
+ POST /api/auth/login 200 in 179ms

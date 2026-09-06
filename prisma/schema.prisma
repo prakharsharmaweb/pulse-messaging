@@ -1,0 +1,131 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(cuid())
+  username     String   @unique
+  displayName  String
+  passwordHash String
+  avatarColor  String   @default("#5b8def")
+  createdAt    DateTime @default(now())
+
+  memberships   ConversationMember[]
+  messages      Message[]            @relation("MessageSender")
+  readReceipts  MessageRead[]
+  reactions     MessageReaction[]
+}
+
+model Conversation {
+  id        String   @id @default(cuid())
+  isGroup   Boolean  @default(false)
+  title     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  members  ConversationMember[]
+  messages Message[]
+
+  @@index([updatedAt])
+}
+
+model ConversationMember {
+  id             String       @id @default(cuid())
+  conversationId String
+  userId         String
+  joinedAt       DateTime     @default(now())
+  lastReadAt     DateTime     @default(now())
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([conversationId, userId])
+  @@index([userId])
+  @@index([conversationId])
+}
+
+enum MessageKind {
+  TEXT
+  IMAGE
+  GIF
+  STICKER
+}
+
+enum MessageStatus {
+  SENT
+  DELIVERED
+  READ
+}
+
+model Message {
+  id             String        @id @default(cuid())
+  conversationId String
+  senderId       String
+  // client-generated idempotency key (temp id). Unique per conversation -> retries are no-ops.
+  clientId       String
+  kind           MessageKind   @default(TEXT)
+  body           String        @default("")
+  // JSON metadata: { url, width, height, previewUrl, title, mime, size, packId, ... }
+  metadata       Json?
+  status         MessageStatus @default(SENT)
+  replyToId      String?
+  createdAt      DateTime      @default(now())
+
+  conversation Conversation      @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender       User              @relation("MessageSender", fields: [senderId], references: [id], onDelete: Cascade)
+  reads        MessageRead[]
+  reactions    MessageReaction[]
+  replyTo      Message?          @relation("MessageReply", fields: [replyToId], references: [id], onDelete: SetNull)
+  replies      Message[]         @relation("MessageReply")
+
+  @@unique([conversationId, clientId])
+  // primary retrieval path: newest-first within a conversation, cursor on (createdAt,id)
+  @@index([conversationId, createdAt, id])
+  @@index([senderId])
+  @@index([replyToId])
+}
+
+model MessageReaction {
+  id        String   @id @default(cuid())
+  messageId String
+  userId    String
+  emoji     String
+  createdAt DateTime @default(now())
+
+  message Message @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([messageId, userId, emoji])
+  @@index([messageId])
+  @@index([userId])
+}
+
+model MessageRead {
+  id        String   @id @default(cuid())
+  messageId String
+  userId    String
+  readAt    DateTime @default(now())
+
+  message Message @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([messageId, userId])
+  @@index([userId])
+}
+
+model ModerationLog {
+  id        String   @id @default(cuid())
+  userId    String
+  kind      String   // "image" | "profanity"
+  action    String   // "blocked" | "allowed"
+  reason    String
+  detail    Json?
+  createdAt DateTime @default(now())
+
+  @@index([userId, createdAt])
+}
